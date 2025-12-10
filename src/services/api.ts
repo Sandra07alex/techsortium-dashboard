@@ -20,6 +20,13 @@ const api = axios.create({
   },
 })
 
+// Request interceptor for debugging
+api.interceptors.request.use((config) => {
+  const fullUrl = `${config.baseURL}${config.url}`
+  console.log(`📡 Requesting: ${config.method?.toUpperCase()} ${fullUrl}`)
+  return config
+})
+
 // Cache interceptor
 api.interceptors.response.use(
   (response) => {
@@ -51,20 +58,46 @@ export async function fetchAllEvents(): Promise<Event[]> {
   // Return cached data if available
   const cached = getCachedData(cacheKey)
   if (cached) {
+    console.log('✅ Returning cached events')
     return cached
   }
   
   try {
+    console.log('🔍 Fetching events from API...')
+    console.log(`   Base URL: ${API_BASE_URL}`)
+    console.log(`   Full URL: ${API_BASE_URL}/api/events`)
+    
     const response = await api.get('/api/events')
+    console.log('✅ Events fetched successfully:', response.data)
     return response.data
   } catch (error) {
-    console.error('Error fetching events:', error)
+    console.error('❌ Error fetching events:', error)
+    
+    // Try to get more detailed error info
+    let errorDetails = 'Unknown error'
     if (axios.isAxiosError(error)) {
-      console.error('Response status:', error.response?.status)
-      console.error('Response data:', error.response?.data)
-      console.error('Request URL:', error.config?.url)
+      console.error('  - Status:', error.response?.status)
+      console.error('  - Status Text:', error.response?.statusText)
+      console.error('  - Data:', error.response?.data)
+      console.error('  - Message:', error.message)
+      
+      if (error.response?.status === 503) {
+        errorDetails = 'Backend database connection failed. Is MongoDB configured?'
+      } else if (error.response?.status === 500) {
+        errorDetails = `Backend error: ${error.response?.data?.error || error.response?.data?.message}`
+      } else if (error.code === 'ECONNREFUSED') {
+        errorDetails = `Cannot connect to backend at ${API_BASE_URL}. Is the backend running?`
+      } else if (error.message.includes('CORS')) {
+        errorDetails = 'CORS error - check backend CORS configuration'
+      } else {
+        errorDetails = error.response?.data?.message || error.message || 'Network error'
+      }
+    } else if (error instanceof Error) {
+      errorDetails = error.message
     }
-    throw new Error('Failed to fetch events from backend')
+    
+    console.error('❌ Final error:', errorDetails)
+    throw new Error(errorDetails)
   }
 }
 
