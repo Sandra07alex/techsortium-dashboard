@@ -110,5 +110,3 @@ export async function fetchRegistrationById(registrationId: string): Promise<Reg
     throw new Error('Failed to fetch registration details')
   }
 }
-  }
-}
