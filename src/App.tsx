@@ -3,7 +3,6 @@ import { Download } from 'lucide-react'
 import Header from './components/Header'
 import TrackSelector from './components/TrackSelector'
 import EventSelector from './components/EventSelector'
-import EventSummaryCard from './components/EventSummaryCard'
 import StatCards from './components/StatCards'
 import RegistrationTable from './components/RegistrationTable'
 import LoadingSpinner from './components/LoadingSpinner'
@@ -18,6 +17,7 @@ export default function App() {
   const [error, setError] = useState<string>('')
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [selectedTrack, setSelectedTrack] = useState<string>('')
+  const [totalRegistrations, setTotalRegistrations] = useState(0)
 
   // Fetch all events on mount
   useEffect(() => {
@@ -27,6 +27,19 @@ export default function App() {
         setLoading(true)
         const eventsData = await fetchAllEvents()
         setEvents(eventsData)
+        
+        // Calculate total registrations across all events
+        let total = 0
+        for (const event of eventsData) {
+          try {
+            const eventRegs = await fetchRegistrations(event.slug)
+            total += eventRegs.length
+          } catch (err) {
+            // Continue if one event fails
+          }
+        }
+        setTotalRegistrations(total)
+        
         if (eventsData.length > 0) {
           // Filter out Hackathon and get first valid event
           const validEvents = eventsData.filter(e => e.track !== 'Hackathon')
@@ -125,13 +138,13 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <Header totalRegistrations={registrations.length} />
+    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white">
+      <Header totalRegistrations={totalRegistrations} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Error Alert */}
         {error && (
-          <div className="mb-6 p-4 bg-red-900/10 border border-red-800/30 rounded-lg text-red-200 text-sm">
+          <div className="mb-6 p-4 bg-red-100 border border-red-300 rounded-lg text-red-800 text-sm">
             ⚠️ {error}
           </div>
         )}
@@ -143,19 +156,14 @@ export default function App() {
           onTrackChange={handleTrackChange}
         />
 
-        {/* Event Selection & Summary */}
-        <div className="grid lg:grid-cols-3 gap-6 mb-8">
+        {/* Event Selection */}
+        <div className="mb-8 max-w-md">
           <EventSelector
             events={events}
             selectedSlug={selectedEventSlug}
             selectedTrack={selectedTrack}
             onEventChange={handleEventChange}
           />
-          {selectedEvent && (
-            <div className="lg:col-span-2">
-              <EventSummaryCard event={selectedEvent} />
-            </div>
-          )}
         </div>
 
         {/* Analytics Cards */}
@@ -167,8 +175,8 @@ export default function App() {
         <div className="mt-10">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-white">Registered Candidates</h2>
-              <p className="text-sm text-slate-400 mt-1">{registrations.length} total registrations</p>
+              <h2 className="text-2xl font-bold text-gray-900">Registered Candidates</h2>
+              <p className="text-sm text-gray-600 mt-1">{registrations.length} total registrations</p>
             </div>
             <button
               onClick={handleExportCSV}
@@ -183,10 +191,10 @@ export default function App() {
           {loading ? (
             <LoadingSpinner message="Loading registrations..." />
           ) : registrations.length === 0 ? (
-            <div className="text-center py-16 bg-slate-800/30 rounded-lg border border-slate-700/50">
-              <div className="text-slate-500 mb-2">📋</div>
-              <p className="text-slate-400 font-medium">No registrations yet</p>
-              <p className="text-slate-500 text-sm mt-1">Registrations will appear here</p>
+            <div className="text-center py-16 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="text-gray-400 mb-2">📋</div>
+              <p className="text-gray-700 font-medium">No registrations yet</p>
+              <p className="text-gray-600 text-sm mt-1">Registrations will appear here</p>
             </div>
           ) : (
             <RegistrationTable registrations={registrations} />

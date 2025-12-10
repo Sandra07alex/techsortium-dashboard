@@ -11,7 +11,7 @@ export default function TrackSelector({
 }: TrackSelectorProps) {
   return (
     <div className="mb-8">
-      <label className="block text-sm font-semibold text-white mb-4">
+      <label className="block text-sm font-semibold text-gray-900 mb-4">
         Select Track
       </label>
       <div className="flex flex-wrap gap-3">
@@ -21,8 +21,8 @@ export default function TrackSelector({
             onClick={() => onTrackChange(track)}
             className={`px-6 py-2.5 rounded-lg font-medium transition duration-200 ${
               selectedTrack === track
-                ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg shadow-yellow-500/30'
-                : 'bg-slate-800/60 border border-slate-700 text-slate-300 hover:border-slate-600 hover:bg-slate-800'
+                ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-white shadow-lg shadow-yellow-400/30 hover:shadow-yellow-400/40'
+                : 'bg-gray-100 border border-gray-300 text-gray-700 hover:border-yellow-300 hover:bg-yellow-50'
             }`}
           >
             {track}
