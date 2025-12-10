@@ -1,15 +1,23 @@
 import axios from 'axios'
 import type { Event, Registration } from '../types'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+
+// Log API URL for debugging (in development only)
+if (import.meta.env.DEV) {
+  console.log('API Base URL:', API_BASE_URL)
+}
 
 // Cache for API responses
 const cache = new Map<string, { data: any; timestamp: number }>()
 const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 
 const api = axios.create({
-  baseURL: API_URL,
-  timeout: 10000,
+  baseURL: API_BASE_URL,
+  timeout: 15000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 })
 
 // Cache interceptor
@@ -50,8 +58,11 @@ export async function fetchAllEvents(): Promise<Event[]> {
     const response = await api.get('/api/events')
     return response.data
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error fetching events:', error)
+    console.error('Error fetching events:', error)
+    if (axios.isAxiosError(error)) {
+      console.error('Response status:', error.response?.status)
+      console.error('Response data:', error.response?.data)
+      console.error('Request URL:', error.config?.url)
     }
     throw new Error('Failed to fetch events from backend')
   }
@@ -70,8 +81,10 @@ export async function fetchRegistrations(eventSlug: string): Promise<Registratio
     const response = await api.get(`/api/registrations/${eventSlug}`)
     return response.data
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error fetching registrations:', error)
+    console.error('Error fetching registrations:', error)
+    if (axios.isAxiosError(error)) {
+      console.error('Response status:', error.response?.status)
+      console.error('Response data:', error.response?.data)
     }
     throw new Error('Failed to fetch registrations for this event')
   }
@@ -90,9 +103,12 @@ export async function fetchRegistrationById(registrationId: string): Promise<Reg
     const response = await api.get(`/api/registration/${registrationId}`)
     return response.data.data
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error fetching registration:', error)
+    console.error('Error fetching registration:', error)
+    if (axios.isAxiosError(error)) {
+      console.error('Response status:', error.response?.status)
     }
     throw new Error('Failed to fetch registration details')
+  }
+}
   }
 }
