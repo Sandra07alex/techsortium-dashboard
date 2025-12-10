@@ -26,6 +26,16 @@ export default function StatCards({ event, registrations }: StatCardsProps) {
       accentColor: 'bg-yellow-100',
     },
     {
+      label: 'IEEE Members',
+      value: ieeeMembers,
+      subLabel: `${registrations.length > 0 ? Math.round((ieeeMembers / registrations.length) * 100) : 0}% members`,
+      icon: Award,
+      bgColor: 'bg-blue-50',
+      borderColor: 'border-blue-200',
+      textColor: 'text-blue-700',
+      accentColor: 'bg-blue-100',
+    },
+    {
       label: 'Payments Verified',
       value: verifiedCount,
       subLabel: `${registrations.length > 0 ? Math.round((verifiedCount / registrations.length) * 100) : 0}% verified`,
@@ -45,21 +55,11 @@ export default function StatCards({ event, registrations }: StatCardsProps) {
       textColor: 'text-orange-700',
       accentColor: 'bg-orange-100',
     },
-    {
-      label: 'IEEE Members',
-      value: ieeeMembers,
-      subLabel: `${registrations.length > 0 ? Math.round((ieeeMembers / registrations.length) * 100) : 0}% members`,
-      icon: Award,
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
-      textColor: 'text-blue-700',
-      accentColor: 'bg-blue-100',
-    },
   ]
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-      {stats.map((stat, index) => {
+      {stats.map((stat) => {
         const Icon = stat.icon
         return (
             <div className={`${stat.bgColor} border ${stat.borderColor} rounded-xl p-5 transition duration-200 hover:border-opacity-60 hover:shadow-md`}>
