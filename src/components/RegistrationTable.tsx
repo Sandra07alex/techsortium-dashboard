@@ -1,4 +1,4 @@
-import { ChevronDown, Eye, X, Search } from 'lucide-react'
+import { Eye, X, Search } from 'lucide-react'
 import { useState } from 'react'
 import type { Registration } from '../types'
 
